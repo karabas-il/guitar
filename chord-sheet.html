@@ -52,8 +52,8 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .block { margin: 0 0 14px; break-inside: avoid; page-break-inside: avoid; }
 pre { margin: 0; font: 15px/1.35 Consolas, "Courier New", monospace; white-space: pre; }
 pre.chords { color: var(--chord); font-weight: 700; }
-.row { position: relative; height: 104px; margin-top: 4px; }
-.row svg { position: absolute; top: 0; width: 64px; height: 102px; }
+.row { position: relative; height: calc(104px * var(--ds, 1)); margin-top: 4px; }
+.row svg { position: absolute; top: 0; width: calc(64px * var(--ds, 1)); height: calc(102px * var(--ds, 1)); }
 .arrow { cursor: pointer; }
 .arrow:hover { fill: var(--accent); }
 .str { stroke: var(--muted); }
@@ -89,7 +89,7 @@ pre.chords { color: var(--chord); font-weight: 700; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { background: #fff; color: #000; }
   main { max-width: none; padding: 0; }
-  .editor, .bar, .lead, h1 { display: none !important; }
+  .editor, .bar, .opts, .lead, h1 { display: none !important; }
   #sheet { padding: 0; border-radius: 0; overflow: visible; background: #fff; }
   .section { color: #000; }
   .brk { display: none !important; }
@@ -122,8 +122,16 @@ A   F#m   B   G#"></textarea>
     <label><input type="checkbox" id="keep" checked> Не разрывать разделы между страницами</label>
     <label>Масштаб печати
       <select id="zoom">
-        <option value="1">100%</option><option value="0.9">90%</option>
-        <option value="0.8">80%</option><option value="0.7">70%</option><option value="0.6">60%</option>
+        <option value="1.5">150%</option><option value="1.4">140%</option><option value="1.3">130%</option>
+        <option value="1.2">120%</option><option value="1.1">110%</option><option value="1" selected>100%</option>
+        <option value="0.9">90%</option><option value="0.8">80%</option><option value="0.7">70%</option>
+        <option value="0.6">60%</option>
+      </select>
+    </label>
+    <label>Размер схем
+      <select id="dsize">
+        <option value="1" selected>100%</option><option value="1.25">125%</option><option value="1.5">150%</option>
+        <option value="1.75">175%</option><option value="2">200%</option>
       </select>
     </label>
     <button id="clearbrk">Убрать все разрывы</button>
@@ -140,7 +148,7 @@ const SHAPES = {
   "F#m": [[[2,4,4,2,2,2],2], [[-1,9,11,11,10,9],9], [[-1,-1,4,2,2,2],2]],
   "G#":  [[[4,6,6,5,4,4],4], [[-1,-1,6,5,4,4],4], [[-1,11,13,13,13,11],11]],
   "B":   [[[7,9,9,8,7,7],7], [[-1,2,4,4,4,2],2]],
-  "E":   [[[0,2,2,1,0,0],0], [[-1,7,9,9,9,7],7], [[-1,-1,2,1,0,0],0]],
+  "E":   [[[0,2,2,1,0,0],0], [[-1,7,9,9,9,7],7]],
   "G#7": [[[4,6,4,5,4,4],4], [[-1,-1,6,5,7,4],0]],
   "Em":  [[[0,2,2,0,0,0],0], [[0,2,2,0,0,3],0], [[-1,7,9,9,8,7],7]],
   "C":   [[[-1,3,2,0,1,0],0], [[-1,3,5,5,5,3],3], [[8,10,10,9,8,8],8]],
@@ -261,6 +269,8 @@ function chordRow(chordLine, chw) {
   const row = document.createElement("div");
   row.className = "row";
   const re = /\S+/g;
+  const ds = parseFloat(document.getElementById("dsize").value) || 1;
+  const W = 64 * ds;
   let m, prevRight = -Infinity, right = 0;
   while ((m = re.exec(chordLine))) {
     if (!CHORD_RE.test(m[0])) continue;
@@ -268,7 +278,7 @@ function chordRow(chordLine, chw) {
     const svg = diagram(m[0]);
     svg.style.left = left + "px";
     row.appendChild(svg);
-    prevRight = left + 64;
+    prevRight = left + W;
     right = prevRight;
   }
   row.style.minWidth = right + "px";
@@ -291,6 +301,7 @@ function load() {
     const z = localStorage.getItem("cs-zoom"); if (z) document.getElementById("zoom").value = z;
     const k = localStorage.getItem("cs-keep"); if (k !== null) document.getElementById("keep").checked = k === "1";
     voicing = JSON.parse(localStorage.getItem("cs-voicing") || "{}");
+    const ds = localStorage.getItem("cs-dsize"); if (ds) document.getElementById("dsize").value = ds;
   } catch (e) {}
 }
 function save() {
@@ -300,6 +311,7 @@ function save() {
     localStorage.setItem("cs-zoom", document.getElementById("zoom").value);
     localStorage.setItem("cs-keep", document.getElementById("keep").checked ? "1" : "0");
     localStorage.setItem("cs-voicing", JSON.stringify(voicing));
+    localStorage.setItem("cs-dsize", document.getElementById("dsize").value);
   } catch (e) {}
 }
 function addBreakToggle(el, key) {
@@ -322,6 +334,7 @@ function applyOptions() {
   const sheet = document.getElementById("sheet");
   sheet.classList.toggle("keep", document.getElementById("keep").checked);
   document.documentElement.style.setProperty("--print-zoom", document.getElementById("zoom").value);
+  document.documentElement.style.setProperty("--ds", document.getElementById("dsize").value);
 }
 
 function render() {
@@ -375,6 +388,7 @@ function render() {
 document.getElementById("render").addEventListener("click", render);
 document.getElementById("keep").addEventListener("change", () => { applyOptions(); save(); });
 document.getElementById("zoom").addEventListener("change", () => { applyOptions(); save(); });
+document.getElementById("dsize").addEventListener("change", () => { save(); render(); });
 document.getElementById("clearbrk").addEventListener("click", () => {
   breaks.clear();
   document.querySelectorAll(".pb").forEach(el => el.classList.remove("pb"));

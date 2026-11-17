@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Гитара: квинтовый круг и аккорды</title>
-<meta name="description" content="Интерактивный квинтовый круг с аппликатурами и страница для печати песен со схемами аккордов.">
+<title>Guitar: Circle of Fifths and Song Chords</title>
+<meta name="description" content="An interactive circle of fifths with chord shapes, and a page for printing songs with chord diagrams.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎸</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,6 +72,9 @@ ol li::marker { color: var(--accent); font-weight: 600; }
 .tips { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px 32px; }
 .tip strong { display: block; font-weight: 600; margin-bottom: 4px; }
 .tip p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+.top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.lang { color: var(--muted); text-decoration: none; font-size: 0.95rem; border: 1px solid var(--line); border-radius: 8px; padding: 4px 12px; }
+.lang:hover { color: var(--accent); border-color: var(--accent); }
 footer { margin-top: 48px; color: var(--faint); font-size: 0.9rem; }
 .s-line { stroke: var(--muted); }
 .s-maj { fill: var(--card); stroke: var(--line); }
@@ -86,9 +89,9 @@ footer { margin-top: 48px; color: var(--faint); font-size: 0.9rem; }
 <body>
 <main>
   <header>
-    <p class="kicker">Гитара</p>
-    <h1>Квинтовый круг и аккорды для песен</h1>
-    <p class="lead">Два небольших инструмента для тех, кто учится играть: разобраться, какие аккорды сочетаются между собой, и распечатать песню со схемами прямо под словами.</p>
+    <div class="top"><p class="kicker">Guitar</p><a class="lang" href="index_ru.html" lang="ru">Русский</a></div>
+    <h1>Circle of Fifths and Song Chords</h1>
+    <p class="lead">Two small tools for people learning to play: see which chords belong together, and print a song with chord diagrams right under the lyrics.</p>
   </header>
 
   <section class="grid">
@@ -98,15 +101,15 @@ footer { margin-top: 48px; color: var(--faint); font-size: 0.9rem; }
           <g id="mini-cof"></g>
         </svg>
       </div>
-      <h2>Квинтовый круг</h2>
-      <p class="desc">Интерактивная карта тональностей: мажорные трезвучия по кругу, параллельные минорные внутри, знаки при ключе в центре.</p>
-      <h3>Как пользоваться</h3>
+      <h2>Circle of Fifths</h2>
+      <p class="desc">An interactive map of keys: major triads around the circle, relative minors inside, key signatures in the middle.</p>
+      <h3>How to use</h3>
       <ol>
-        <li>Нажмите на любой сектор круга, чтобы выбрать тональность.</li>
-        <li>Подсветятся шесть аккордов этой тональности: выбранный мажор, его соседи и три минора под ними.</li>
-        <li>Под кругом появятся схемы этих аккордов в самой ходовой аппликатуре.</li>
+        <li>Click any segment of the circle to choose a key.</li>
+        <li>The six chords of that key light up: the selected major, its two neighbours and the three minors below them.</li>
+        <li>Diagrams of these chords in their most common fingering appear under the circle.</li>
       </ol>
-      <a class="btn" href="kvintovyj-krug.html">Открыть круг <span aria-hidden="true">→</span></a>
+      <a class="btn" href="kvintovyj-krug.html">Open the circle <span aria-hidden="true">→</span></a>
     </article>
 
     <article class="card">
@@ -120,35 +123,35 @@ footer { margin-top: 48px; color: var(--faint); font-size: 0.9rem; }
           <g id="mini-d2" transform="translate(114,58)"></g>
         </svg>
       </div>
-      <h2>Песня со схемами аккордов</h2>
-      <p class="desc">Вставляете подбор песни в привычном виде, и под каждой строкой текста появляются схемы аккордов. Готовую страницу удобно печатать.</p>
-      <h3>Как пользоваться</h3>
+      <h2>Song Chords with Diagrams</h2>
+      <p class="desc">Paste a song in the usual chords-over-lyrics format and chord diagrams appear under every line. The result is easy to print.</p>
+      <h3>How to use</h3>
       <ol>
-        <li>Скопируйте с сайта подбор, где аккорды стоят над текстом, и вставьте в поле.</li>
-        <li>Нажмите «Показать». Строки вида [Припев]: станут заголовками разделов.</li>
-        <li>Нажимайте на схему или стрелки ‹ › под ней, чтобы выбрать другую аппликатуру: она сменится во всей песне.</li>
-        <li>Значком ⤓ слева от строки начните новую страницу, подберите масштаб и нажмите «Печать».</li>
+        <li>Copy a song from a chord site, with chords above the lyrics, and paste it into the box.</li>
+        <li>Click “Show”. Lines like [Chorus]: become section headings.</li>
+        <li>Click a diagram or the ‹ › arrows under it to pick another fingering; it changes throughout the song.</li>
+        <li>Use ⤓ to the left of a line to start a new page, adjust the print scale and diagram size, then click “Print”.</li>
       </ol>
-      <a class="btn" href="chord-sheet.html">Открыть страницу <span aria-hidden="true">→</span></a>
+      <a class="btn" href="chord-sheet.html">Open the page <span aria-hidden="true">→</span></a>
     </article>
   </section>
 
   <section class="tips">
     <div class="tip">
-      <strong>Всё запоминается</strong>
-      <p>Текст песни, выбранные аппликатуры и разрывы страниц сохраняются в вашем браузере.</p>
+      <strong>Everything is saved</strong>
+      <p>The song text, chosen fingerings, page breaks and print settings are kept in your browser.</p>
     </div>
     <div class="tip">
-      <strong>Печать</strong>
-      <p>Открывайте страницу прямо в браузере, а не в предпросмотре файла. Если правый край обрезается, выберите альбомную ориентацию.</p>
+      <strong>Printing</strong>
+      <p>Open the page directly in your browser, not in a file preview. If the right edge gets cut off, switch to landscape.</p>
     </div>
     <div class="tip">
-      <strong>Буквы и ноты</strong>
-      <p>A — ля, B — си, C — до, D — ре, E — ми, F — фа, G — соль. Маленькая m означает минор.</p>
+      <strong>Chord names</strong>
+      <p>A small m means minor (Am), 7 means a seventh chord (E7), # is sharp and b is flat (F#, Bb).</p>
     </div>
   </section>
 
-  <footer>Работает в любом современном браузере, на компьютере и на телефоне.</footer>
+  <footer>Works in any modern browser, on desktop and on mobile.</footer>
 </main>
 <script>
 // Decorative mini illustrations

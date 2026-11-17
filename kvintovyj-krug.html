@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Квинтовый круг с аккордами</title>
+<title>Circle of Fifths with Chords</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
@@ -92,19 +92,19 @@ svg { display: block; width: 100%; height: auto; max-width: 100%; }
 </head>
 <body>
 <main>
-  <h1>Квинтовый круг</h1>
-  <p class="lead">Выберите тональность на круге, и под ним появятся шесть её аккордов с самой ходовой гитарной аппликатурой.</p>
+  <h1>Circle of Fifths</h1>
+  <p class="lead">Pick a key on the circle and its six chords will appear below, each with the most common guitar fingering.</p>
 
-  <svg id="cof" viewBox="0 0 460 460" role="img" aria-label="Квинтовый круг: мажорные трезвучия снаружи, параллельные минорные внутри"></svg>
+  <svg id="cof" viewBox="0 0 460 460" role="img" aria-label="Circle of fifths: major triads outside, relative minors inside"></svg>
   <div id="info" aria-live="polite"></div>
   <div class="shapes-wrap">
-    <svg id="shapes" viewBox="0 0 680 215" role="img" aria-label="Аппликатуры аккордов выбранной тональности"></svg>
+    <svg id="shapes" viewBox="0 0 680 215" role="img" aria-label="Chord shapes for the selected key"></svg>
   </div>
 
   <div class="notes">
-    <p>По часовой стрелке каждый шаг — квинта вверх и один диез, против часовой — кварта вверх и один бемоль.</p>
-    <p>Аккорды тональности: выбранный мажор (I), его соседи слева (IV) и справа (V) и три минора под ними (vi, ii, iii).</p>
-    <p>На схемах: ○ открытая струна, × не играть, цифра в кружке — палец, полоса — баррэ, число слева — лад.</p>
+    <p>Clockwise, each step is a fifth up and adds one sharp; counterclockwise, each step is a fourth up and adds one flat.</p>
+    <p>Chords of a key: the selected major (I), its neighbours on the left (IV) and right (V), and the three minors below them (vi, ii, iii).</p>
+    <p>In the diagrams: ○ open string, × don’t play, number in a dot is the finger, a bar is a barre, the number on the left is the fret.</p>
   </div>
 </main>
 <script>
@@ -113,9 +113,9 @@ const cof = document.getElementById("cof");
 const shp = document.getElementById("shapes");
 
 const majors = ["C","G","D","A","E","B","F♯/G♭","D♭","A♭","E♭","B♭","F"];
-const majRu  = ["до","соль","ре","ля","ми","си","фа♯/соль♭","ре♭","ля♭","ми♭","си♭","фа"];
+const majRu  = ["C","G","D","A","E","B","F♯/G♭","D♭","A♭","E♭","B♭","F"];
 const minors = ["Am","Em","Bm","F♯m","C♯m","G♯m","D♯m/E♭m","B♭m","Fm","Cm","Gm","Dm"];
-const minRu  = ["ля","ми","си","фа♯","до♯","соль♯","ре♯/ми♭","си♭","фа","до","соль","ре"];
+const minRu  = ["A","E","B","F♯","C♯","G♯","D♯/E♭","B♭","F","C","G","D"];
 const sigs   = ["0","1♯","2♯","3♯","4♯","5♯","6","5♭","4♭","3♭","2♭","1♭"];
 
 // Shapes: frets from 6th to 1st string (-1 = muted), fingers, barre [fret, fromString] or null
@@ -158,7 +158,7 @@ function el(tag, attrs, text, parent) {
 
 // Circle geometry
 const CX = 230, CY = 230;
-const R = {outerOut: 222, outerIn: 156, innerIn: 98, maj: 200, majRu: 174, min: 137, minRu: 116, sig: 76};
+const R = {outerOut: 222, outerIn: 156, innerIn: 98, maj: 189, majRu: 174, min: 127, minRu: 116, sig: 76};
 function pt(r, deg) { const a = deg * Math.PI / 180; return [CX + r * Math.cos(a), CY + r * Math.sin(a)]; }
 function wedge(r1, r2, a1, a2) {
   const [x1, y1] = pt(r2, a1), [x2, y2] = pt(r2, a2), [x3, y3] = pt(r1, a2), [x4, y4] = pt(r1, a1);
@@ -173,18 +173,16 @@ function first(s) { return s.split("/")[0]; }
 const majW = [], minW = [];
 for (let i = 0; i < 12; i++) {
   const c = -90 + i * 30;
-  const g = el("g", {class: "sector", tabindex: 0, role: "button", "aria-label": `${first(majRu[i])} мажор и ${first(minRu[i])} минор`}, undefined, cof);
+  const g = el("g", {class: "sector", tabindex: 0, role: "button", "aria-label": `${first(majRu[i])} major and ${first(minRu[i])} minor`}, undefined, cof);
   g.addEventListener("click", () => select(i));
   g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(i); } });
   majW.push(el("path", {d: wedge(R.outerIn, R.outerOut, c - 15, c + 15), class: "maj"}, undefined, g));
   minW.push(el("path", {d: wedge(R.innerIn, R.outerIn, c - 15, c + 15), class: "min"}, undefined, g));
   label(R.maj, c, majors[i], majors[i].length > 3 ? 12 : 17, 600, "t-ink", g);
-  label(R.majRu, c, majRu[i], 11, 400, "t-muted", g);
   label(R.min, c, minors[i], minors[i].length > 4 ? 11 : 14, 500, "t-ink", g);
-  label(R.minRu, c, minRu[i], 11, 400, "t-muted", g);
   label(R.sig, c, sigs[i], 11, 400, "t-faint", cof);
 }
-el("text", {x: CX, y: CY, "text-anchor": "middle", "dominant-baseline": "central", "font-size": 11, class: "t-faint"}, "знаки", cof);
+el("text", {x: CX, y: CY, "text-anchor": "middle", "dominant-baseline": "central", "font-size": 11, class: "t-faint"}, "key sig.", cof);
 
 // Chord diagrams
 const SS = 15, FS = 22, NF = 4;
@@ -223,16 +221,16 @@ function select(k) {
   const info = document.getElementById("info");
   info.innerHTML = "";
   const s = document.createElement("strong");
-  s.textContent = `${first(majRu[k])} мажор (${first(majors[k])})`;
-  info.append(s, ` и параллельный ${first(minRu[k])} минор (${first(minors[k])})`);
+  s.textContent = `${first(majRu[k])} major`;
+  info.append(s, ` and its relative ${first(minRu[k])} minor`);
   while (shp.firstChild) shp.removeChild(shp.firstChild);
   const list = [
-    [majors[k], first(majRu[k]) + " маж", "I", majShape[k]],
-    [majors[L], first(majRu[L]) + " маж", "IV", majShape[L]],
-    [majors[Rt], first(majRu[Rt]) + " маж", "V", majShape[Rt]],
-    [minors[k], first(minRu[k]) + " мин", "vi", minShape[k]],
-    [minors[L], first(minRu[L]) + " мин", "ii", minShape[L]],
-    [minors[Rt], first(minRu[Rt]) + " мин", "iii", minShape[Rt]]
+    [majors[k], "major", "I", majShape[k]],
+    [majors[L], "major", "IV", majShape[L]],
+    [majors[Rt], "major", "V", majShape[Rt]],
+    [minors[k], "minor", "vi", minShape[k]],
+    [minors[L], "minor", "ii", minShape[L]],
+    [minors[Rt], "minor", "iii", minShape[Rt]]
   ];
   list.forEach((c, j) => drawChord(36 + j * 110, 8, first(c[0]), c[1], c[2], c[3]));
 }

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Аккорды с аппликатурами</title>
+<title>Song Chords with Diagrams</title>
 <style>
 :root {
   color-scheme: light;
@@ -71,7 +71,7 @@ pre.chords { color: var(--chord); font-weight: 700; }
 .brk:hover, .brk:focus-visible { opacity: 1; background: var(--bg); }
 .pb { break-before: page; page-break-before: always; }
 .pb::before {
-  content: "— новая страница —"; display: block; text-align: center; font-size: 12px; color: var(--accent);
+  content: "— new page —"; display: block; text-align: center; font-size: 12px; color: var(--accent);
   border-top: 1px dashed var(--accent); margin: 10px 0 12px; padding-top: 2px;
 }
 .keep .sec { break-inside: avoid; page-break-inside: avoid; }
@@ -101,26 +101,26 @@ pre.chords { color: var(--chord); font-weight: 700; }
 </head>
 <body>
 <main>
-  <h1>Аккорды с аппликатурами</h1>
-  <p class="lead">Вставьте текст песни в формате «строка аккордов над строкой текста», как на сайтах с подборами. Под каждой строкой появятся схемы аккордов. Строки вида [Припев]: становятся заголовками разделов. Чтобы перенести часть песни на новую страницу, нажмите ⤓ слева от нужной строки или раздела (или вставьте в текст строку ---). Нажатие на схему аккорда переключает его аппликатуру во всей песне.</p>
+  <h1>Song Chords with Diagrams</h1>
+  <p class="lead">Paste a song in the usual “chords above lyrics” format, as found on chord sites. Chord diagrams will appear under every line. Lines like [Chorus]: become section headings. To move part of the song to a new page, click ⤓ to the left of a line or section (or put a line with --- in the text). Clicking a chord diagram switches its fingering throughout the song.</p>
   <div class="editor">
-    <textarea id="src" spellcheck="false" placeholder="[Куплет]:
+    <textarea id="src" spellcheck="false" placeholder="[Verse]:
 C#m        A          F#m        G#
-первая строка текста
+first line of lyrics
 C#m        A          F#m             B
-вторая строка текста
+second line of lyrics
 
-[Проигрыш]:
+[Interlude]:
 A   F#m   B   G#"></textarea>
   </div>
   <div class="bar">
-    <button class="primary" id="render">Показать</button>
-    <button id="toggle">Скрыть редактор</button>
-    <button id="print">Печать</button>
+    <button class="primary" id="render">Show</button>
+    <button id="toggle">Hide editor</button>
+    <button id="print">Print</button>
   </div>
   <div class="opts">
-    <label><input type="checkbox" id="keep" checked> Не разрывать разделы между страницами</label>
-    <label>Масштаб печати
+    <label><input type="checkbox" id="keep" checked> Keep sections on one page</label>
+    <label>Print scale
       <select id="zoom">
         <option value="3">300%</option>
         <option value="2.9">290%</option>
@@ -150,7 +150,7 @@ A   F#m   B   G#"></textarea>
         <option value="0.5">50%</option>
       </select>
     </label>
-    <label>Размер схем
+    <label>Diagram size
       <select id="dsize">
         <option value="3">300%</option>
         <option value="2.9">290%</option>
@@ -180,8 +180,8 @@ A   F#m   B   G#"></textarea>
         <option value="0.5">50%</option>
       </select>
     </label>
-    <button id="clearbrk">Убрать все разрывы</button>
-    <button id="resetv">Аппликатуры по умолчанию</button>
+    <button id="clearbrk">Remove all page breaks</button>
+    <button id="resetv">Default fingerings</button>
   </div>
   <div id="sheet"></div>
 </main>
@@ -228,7 +228,7 @@ const SHAPES = {
 let voicing = {};
 const FLAT_TO_SHARP = {"Db":"C#","Eb":"D#","Gb":"F#","Ab":"G#","Bb":"A#"};
 const CHORD_RE = /^[A-H](#|b|♯|♭)?(m|maj7|m7|7|sus2|sus4|dim|aug|6|9|add9|maj)?(\/[A-H](#|b|♯|♭)?)?$/;
-const EXTRA_RE = /^(\|+|-+|\(?x\d+\)?|\(?х\d+\)?)$/i;
+const EXTRA_RE = /^(\|+|-+|\(?x\d+\)?|\(?\u0445\d+\)?)$/i;
 
 function normalize(name) {
   let n = name.replace("♯", "#").replace("♭", "b").split("/")[0];
@@ -259,7 +259,7 @@ function diagram(name) {
   const list = SHAPES[key];
   mk("text", {x: 34, y: 87, "text-anchor": "middle", "font-size": 10, "font-weight": 700, class: "t-ink"}, svg, name);
   if (!list) {
-    mk("text", {x: 34, y: 45, "text-anchor": "middle", "font-size": 9, class: "t-muted"}, svg, "нет схемы");
+    mk("text", {x: 34, y: 45, "text-anchor": "middle", "font-size": 9, class: "t-muted"}, svg, "no diagram");
     return svg;
   }
   const idx = Math.min(voicing[key] || 0, list.length - 1);
@@ -278,7 +278,7 @@ function diagram(name) {
     prev.addEventListener("click", step(-1));
     next.addEventListener("click", step(1));
     svg.style.cursor = "pointer";
-    svg.setAttribute("title", "Нажмите, чтобы сменить аппликатуру");
+    svg.setAttribute("title", "Click to change the fingering");
     svg.addEventListener("click", step(1));
   }
   const SX = 12, SS = 9, TOP = 20, FS = 13, NF = 4;
@@ -341,23 +341,23 @@ function pre(cls, text) {
 let breaks = new Set();
 function load() {
   try {
-    const t = localStorage.getItem("cs-text");
+    const t = localStorage.getItem("cs-en-text");
     if (t !== null) document.getElementById("src").value = t;
-    breaks = new Set(JSON.parse(localStorage.getItem("cs-breaks") || "[]"));
-    const z = localStorage.getItem("cs-zoom"); if (z) document.getElementById("zoom").value = z;
-    const k = localStorage.getItem("cs-keep"); if (k !== null) document.getElementById("keep").checked = k === "1";
-    voicing = JSON.parse(localStorage.getItem("cs-voicing") || "{}");
-    const ds = localStorage.getItem("cs-dsize"); if (ds) document.getElementById("dsize").value = ds;
+    breaks = new Set(JSON.parse(localStorage.getItem("cs-en-breaks") || "[]"));
+    const z = localStorage.getItem("cs-en-zoom"); if (z) document.getElementById("zoom").value = z;
+    const k = localStorage.getItem("cs-en-keep"); if (k !== null) document.getElementById("keep").checked = k === "1";
+    voicing = JSON.parse(localStorage.getItem("cs-en-voicing") || "{}");
+    const ds = localStorage.getItem("cs-en-dsize"); if (ds) document.getElementById("dsize").value = ds;
   } catch (e) {}
 }
 function save() {
   try {
-    localStorage.setItem("cs-text", document.getElementById("src").value);
-    localStorage.setItem("cs-breaks", JSON.stringify([...breaks]));
-    localStorage.setItem("cs-zoom", document.getElementById("zoom").value);
-    localStorage.setItem("cs-keep", document.getElementById("keep").checked ? "1" : "0");
-    localStorage.setItem("cs-voicing", JSON.stringify(voicing));
-    localStorage.setItem("cs-dsize", document.getElementById("dsize").value);
+    localStorage.setItem("cs-en-text", document.getElementById("src").value);
+    localStorage.setItem("cs-en-breaks", JSON.stringify([...breaks]));
+    localStorage.setItem("cs-en-zoom", document.getElementById("zoom").value);
+    localStorage.setItem("cs-en-keep", document.getElementById("keep").checked ? "1" : "0");
+    localStorage.setItem("cs-en-voicing", JSON.stringify(voicing));
+    localStorage.setItem("cs-en-dsize", document.getElementById("dsize").value);
   } catch (e) {}
 }
 function addBreakToggle(el, key) {
@@ -366,7 +366,7 @@ function addBreakToggle(el, key) {
   const b = document.createElement("button");
   b.className = "brk";
   b.type = "button";
-  b.title = "Начать с новой страницы";
+  b.title = "Start a new page here";
   b.textContent = "⤓";
   b.addEventListener("click", ev => {
     ev.stopPropagation();
@@ -448,7 +448,7 @@ document.getElementById("print").addEventListener("click", () => { render(); win
 document.getElementById("toggle").addEventListener("click", e => {
   const ed = document.querySelector(".editor");
   ed.classList.toggle("hidden");
-  e.target.textContent = ed.classList.contains("hidden") ? "Показать редактор" : "Скрыть редактор";
+  e.target.textContent = ed.classList.contains("hidden") ? "Show editor" : "Hide editor";
 });
 </script>
 </body>

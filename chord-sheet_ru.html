@@ -52,6 +52,10 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .block { margin: 0 0 14px; break-inside: avoid; page-break-inside: avoid; }
 pre { margin: 0; font: 15px/1.35 Consolas, "Courier New", monospace; white-space: pre; }
 pre.chords { color: var(--chord); font-weight: 700; }
+.chordline { position: relative; height: 21px; }
+.ch { position: absolute; top: 0; white-space: nowrap; }
+.ch b { font: 700 15px/1.35 Consolas, "Courier New", monospace; color: var(--chord); }
+.ch i { font-style: normal; font-size: 12px; margin-left: 5px; color: var(--muted); }
 .row { position: relative; height: calc(104px * var(--ds, 1)); margin-top: 4px; }
 .row svg { position: absolute; top: 0; width: calc(64px * var(--ds, 1)); height: calc(102px * var(--ds, 1)); }
 .arrow { cursor: pointer; }
@@ -120,6 +124,7 @@ A   F#m   B   G#"></textarea>
   </div>
   <div class="opts">
     <label><input type="checkbox" id="keep" checked> Не разрывать разделы между страницами</label>
+    <label><input type="checkbox" id="runames" checked> Русские названия аккордов</label>
     <label>Масштаб печати
       <select id="zoom">
         <option value="3">300%</option>
@@ -252,6 +257,27 @@ function mk(tag, attrs, parent, text) {
   parent.appendChild(e);
   return e;
 }
+// Russian chord name, e.g. "Am" -> ["Ля", "минор"], "F#7" -> ["Фа-диез", "септаккорд"]
+const RU_NOTE = {C: "До", D: "Ре", E: "Ми", F: "Фа", G: "Соль", A: "Ля", B: "Си", H: "Си"};
+const RU_QUALITY = {
+  "": "мажор", "maj": "мажор", "m": "минор", "7": "септаккорд", "m7": "минор септ.",
+  "maj7": "большой септ.", "6": "мажор с секстой", "9": "нонаккорд", "add9": "мажор add9",
+  "sus2": "sus2", "sus4": "sus4", "dim": "уменьшённый", "aug": "увеличенный"
+};
+function ruNote(letter, acc) {
+  let n = RU_NOTE[letter];
+  if (acc === "#" || acc === "♯") n += "-диез";
+  if (acc === "b" || acc === "♭") n += "-бемоль";
+  return n;
+}
+function ruChordName(name) {
+  const m = /^([A-H])(#|b|♯|♭)?(.*?)(?:\/([A-H])(#|b|♯|♭)?)?$/.exec(name);
+  if (!m || !(m[3] in RU_QUALITY)) return null;
+  let q = RU_QUALITY[m[3]];
+  if (m[4]) q += "/" + ruNote(m[4], m[5]).toLowerCase();
+  return [ruNote(m[1], m[2]), q];
+}
+
 function diagram(name) {
   const svg = document.createElementNS(NS, "svg");
   svg.setAttribute("viewBox", "0 0 64 102");
@@ -311,6 +337,40 @@ function charWidth() {
   probe.remove();
   return w || 9;
 }
+// Chord line: each chord keeps its column, with its Russian name underneath
+function chordLineEl(line, chw) {
+  const div = document.createElement("div");
+  div.className = "chordline";
+  const re = /\S+/g;
+  let m, prevRight = -Infinity, right = 0;
+  while ((m = re.exec(line))) {
+    const tok = m[0];
+    const showRu = document.getElementById("runames").checked;
+    const ru = showRu && CHORD_RE.test(tok) ? ruChordName(tok) : null;
+    const label = ru ? ru[0] + " " + ru[1] : "";
+    const w = tok.length * chw + (label ? 5 + (label.length + 2) * 6.8 : 0);
+    const left = Math.max(m.index * chw, prevRight + 10);
+    if (chordLefts) chordLefts.set(m.index, left);
+    const span = document.createElement("span");
+    span.className = "ch";
+    span.style.left = left + "px";
+    const b = document.createElement("b");
+    b.textContent = tok;
+    span.appendChild(b);
+    if (label) {
+      const i = document.createElement("i");
+      i.textContent = "(" + label + ")";
+      span.appendChild(i);
+    }
+    div.appendChild(span);
+    prevRight = left + w;
+    right = prevRight;
+  }
+  div.style.minWidth = right + "px";
+  return div;
+}
+let chordLefts = null;
+
 function chordRow(chordLine, chw) {
   const row = document.createElement("div");
   row.className = "row";
@@ -320,7 +380,8 @@ function chordRow(chordLine, chw) {
   let m, prevRight = -Infinity, right = 0;
   while ((m = re.exec(chordLine))) {
     if (!CHORD_RE.test(m[0])) continue;
-    const left = Math.max(m.index * chw - 6, prevRight + 4, 0);
+    const base = chordLefts && chordLefts.has(m.index) ? chordLefts.get(m.index) : m.index * chw;
+    const left = Math.max(base - 6, prevRight + 4, 0);
     const svg = diagram(m[0]);
     svg.style.left = left + "px";
     row.appendChild(svg);
@@ -348,6 +409,7 @@ function load() {
     const k = localStorage.getItem("cs-keep"); if (k !== null) document.getElementById("keep").checked = k === "1";
     voicing = JSON.parse(localStorage.getItem("cs-voicing") || "{}");
     const ds = localStorage.getItem("cs-dsize"); if (ds) document.getElementById("dsize").value = ds;
+    const rn = localStorage.getItem("cs-runames"); if (rn !== null) document.getElementById("runames").checked = rn === "1";
   } catch (e) {}
 }
 function save() {
@@ -358,6 +420,7 @@ function save() {
     localStorage.setItem("cs-keep", document.getElementById("keep").checked ? "1" : "0");
     localStorage.setItem("cs-voicing", JSON.stringify(voicing));
     localStorage.setItem("cs-dsize", document.getElementById("dsize").value);
+    localStorage.setItem("cs-runames", document.getElementById("runames").checked ? "1" : "0");
   } catch (e) {}
 }
 function addBreakToggle(el, key) {
@@ -414,7 +477,8 @@ function render() {
     block.className = "block";
     const key = "b" + i;
     if (isChordLine(line)) {
-      block.appendChild(pre("chords", line));
+      chordLefts = new Map();
+      block.appendChild(chordLineEl(line, chw));
       const next = lines[i + 1];
       if (next !== undefined && next.trim() && !isChordLine(next) && !isHeading(next) && !/^\s*-{3,}\s*$/.test(next)) {
         block.appendChild(pre("lyric", next));
@@ -435,6 +499,7 @@ document.getElementById("render").addEventListener("click", render);
 document.getElementById("keep").addEventListener("change", () => { applyOptions(); save(); });
 document.getElementById("zoom").addEventListener("change", () => { applyOptions(); save(); });
 document.getElementById("dsize").addEventListener("change", () => { save(); render(); });
+document.getElementById("runames").addEventListener("change", () => { save(); render(); });
 document.getElementById("clearbrk").addEventListener("click", () => {
   breaks.clear();
   document.querySelectorAll(".pb").forEach(el => el.classList.remove("pb"));

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Гитара: квинтовый круг и аккорды</title>
+<meta name="description" content="Интерактивный квинтовый круг с аппликатурами и страница для печати песен со схемами аккордов.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎸</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #F3F5F8;
+  --card: #FFFFFF;
+  --ink: #1D2433;
+  --muted: #5E6675;
+  --faint: #8A91A0;
+  --line: #D6DBE3;
+  --minor: #E4E8EF;
+  --accent: #B07A1E;
+  --accent-soft: rgba(176, 122, 30, 0.12);
+  --on-accent: #FFFFFF;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #14171D; --card: #1C2029; --ink: #E8EAEE; --muted: #A4AAB6; --faint: #7A8190;
+    --line: #2E3440; --minor: #252B36; --accent: #D9A441; --accent-soft: rgba(217, 164, 65, 0.14); --on-accent: #14171D;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #14171D; --card: #1C2029; --ink: #E8EAEE; --muted: #A4AAB6; --faint: #7A8190;
+  --line: #2E3440; --minor: #252B36; --accent: #D9A441; --accent-soft: rgba(217, 164, 65, 0.14); --on-accent: #14171D;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "Golos Text", "Segoe UI", system-ui, -apple-system, sans-serif; line-height: 1.6;
+}
+main { max-width: 1040px; margin: 0 auto; padding: 56px 24px 64px; }
+header { max-width: 680px; margin-bottom: 40px; }
+.kicker { color: var(--accent); font-weight: 600; font-size: 0.9rem; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 10px; }
+h1 { font-size: clamp(2rem, 4.5vw, 2.9rem); line-height: 1.15; font-weight: 700; margin: 0 0 14px; letter-spacing: -0.015em; }
+.lead { color: var(--muted); font-size: 1.1rem; margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px;
+  display: flex; flex-direction: column; transition: border-color .2s, transform .2s;
+}
+.card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.art { height: 170px; display: flex; align-items: center; justify-content: center; background: var(--accent-soft); border-radius: 12px; margin-bottom: 22px; }
+.art svg { height: 140px; width: auto; max-width: 100%; }
+h2 { font-size: 1.4rem; font-weight: 600; margin: 0 0 8px; }
+.desc { color: var(--muted); margin: 0 0 18px; }
+h3 { font-size: 0.85rem; font-weight: 600; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 8px; }
+ol { margin: 0 0 24px; padding-left: 1.2em; }
+ol li { margin-bottom: 6px; }
+ol li::marker { color: var(--accent); font-weight: 600; }
+.btn {
+  margin-top: auto; align-self: flex-start; display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent); color: var(--on-accent); text-decoration: none; font-weight: 600;
+  padding: 11px 20px; border-radius: 10px; transition: filter .15s;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+.tips { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px 32px; }
+.tip strong { display: block; font-weight: 600; margin-bottom: 4px; }
+.tip p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+.top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.lang { color: var(--muted); text-decoration: none; font-size: 0.95rem; border: 1px solid var(--line); border-radius: 8px; padding: 4px 12px; }
+.lang:hover { color: var(--accent); border-color: var(--accent); }
+footer { margin-top: 48px; color: var(--faint); font-size: 0.9rem; }
+.s-line { stroke: var(--muted); }
+.s-maj { fill: var(--card); stroke: var(--line); }
+.s-min { fill: var(--minor); stroke: var(--line); }
+.s-on { fill: var(--accent); fill-opacity: .35; stroke: var(--line); }
+.s-tonic { fill: var(--accent); fill-opacity: .7; stroke: var(--line); }
+.s-dot { fill: var(--accent); }
+.s-text { fill: var(--ink); font-family: inherit; }
+.s-muted { fill: var(--muted); font-family: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="top"><p class="kicker">Гитара</p><a class="lang" href="index.html" lang="en">English</a></div>
+    <h1>Квинтовый круг и аккорды для песен</h1>
+    <p class="lead">Два небольших инструмента для тех, кто учится играть: разобраться, какие аккорды сочетаются между собой, и распечатать песню со схемами прямо под словами.</p>
+  </header>
+
+  <section class="grid">
+    <article class="card">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 160 160">
+          <g id="mini-cof"></g>
+        </svg>
+      </div>
+      <h2>Квинтовый круг</h2>
+      <p class="desc">Интерактивная карта тональностей: мажорные трезвучия по кругу, параллельные минорные внутри, знаки при ключе в центре.</p>
+      <h3>Как пользоваться</h3>
+      <ol>
+        <li>Нажмите на любой сектор круга, чтобы выбрать тональность.</li>
+        <li>Подсветятся шесть аккордов этой тональности: выбранный мажор, его соседи и три минора под ними.</li>
+        <li>Под кругом появятся схемы этих аккордов в самой ходовой аппликатуре.</li>
+      </ol>
+      <a class="btn" href="kvintovyj-krug_ru.html">Открыть круг <span aria-hidden="true">→</span></a>
+    </article>
+
+    <article class="card">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 220 140">
+          <text x="18" y="22" class="s-text" font-size="13" font-weight="700" style="fill: var(--accent)">C#m</text>
+          <text x="118" y="22" class="s-text" font-size="13" font-weight="700" style="fill: var(--accent)">A</text>
+          <rect x="18" y="32" width="170" height="6" rx="3" class="s-muted" opacity=".35"></rect>
+          <rect x="18" y="44" width="120" height="6" rx="3" class="s-muted" opacity=".2"></rect>
+          <g id="mini-d1" transform="translate(14,58)"></g>
+          <g id="mini-d2" transform="translate(114,58)"></g>
+        </svg>
+      </div>
+      <h2>Песня со схемами аккордов</h2>
+      <p class="desc">Вставляете подбор песни в привычном виде, и под каждой строкой текста появляются схемы аккордов. Готовую страницу удобно печатать.</p>
+      <h3>Как пользоваться</h3>
+      <ol>
+        <li>Скопируйте с сайта подбор, где аккорды стоят над текстом, и вставьте в поле.</li>
+        <li>Нажмите «Показать». Строки вида [Припев]: станут заголовками разделов.</li>
+        <li>Нажимайте на схему или стрелки ‹ › под ней, чтобы выбрать другую аппликатуру: она сменится во всей песне.</li>
+        <li>Значком ⤓ слева от строки начните новую страницу, подберите масштаб и нажмите «Печать».</li>
+      </ol>
+      <a class="btn" href="chord-sheet_ru.html">Открыть страницу <span aria-hidden="true">→</span></a>
+    </article>
+  </section>
+
+  <section class="tips">
+    <div class="tip">
+      <strong>Всё запоминается</strong>
+      <p>Текст песни, выбранные аппликатуры и разрывы страниц сохраняются в вашем браузере.</p>
+    </div>
+    <div class="tip">
+      <strong>Печать</strong>
+      <p>Открывайте страницу прямо в браузере, а не в предпросмотре файла. Если правый край обрезается, выберите альбомную ориентацию.</p>
+    </div>
+    <div class="tip">
+      <strong>Буквы и ноты</strong>
+      <p>A — ля, B — си, C — до, D — ре, E — ми, F — фа, G — соль. Маленькая m означает минор.</p>
+    </div>
+  </section>
+
+  <footer>Работает в любом современном браузере, на компьютере и на телефоне.</footer>
+</main>
+<script>
+// Decorative mini illustrations
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  parent.appendChild(e);
+  return e;
+}
+
+(function miniCircle() {
+  const g = document.getElementById("mini-cof");
+  const cx = 80, cy = 80;
+  const labels = ["C","G","D","A","E","B","F♯","D♭","A♭","E♭","B♭","F"];
+  const pt = (r, d) => [cx + r * Math.cos(d * Math.PI / 180), cy + r * Math.sin(d * Math.PI / 180)];
+  const wedge = (r1, r2, a1, a2) => {
+    const [x1, y1] = pt(r2, a1), [x2, y2] = pt(r2, a2), [x3, y3] = pt(r1, a2), [x4, y4] = pt(r1, a1);
+    return `M${x1} ${y1} A${r2} ${r2} 0 0 1 ${x2} ${y2} L${x3} ${y3} A${r1} ${r1} 0 0 0 ${x4} ${y4} Z`;
+  };
+  for (let i = 0; i < 12; i++) {
+    const c = -90 + i * 30;
+    const outer = i === 0 ? "s-tonic" : (i === 1 || i === 11) ? "s-on" : "s-maj";
+    const inner = (i === 0 || i === 1 || i === 11) ? "s-on" : "s-min";
+    mk("path", {d: wedge(52, 76, c - 15, c + 15), class: outer, "stroke-width": 0.8}, g);
+    mk("path", {d: wedge(32, 52, c - 15, c + 15), class: inner, "stroke-width": 0.8}, g);
+    const [x, y] = pt(64, c);
+    mk("text", {x, y, "text-anchor": "middle", "dominant-baseline": "central", "font-size": 9, "font-weight": 600, class: "s-text"}, g, labels[i]);
+  }
+})();
+
+function miniChord(id, frets, barre) {
+  const g = document.getElementById(id);
+  const SS = 12, FS = 15, top = 6;
+  const base = Math.max(...frets) > 4 ? barre : 1;
+  for (let i = 0; i < 6; i++) mk("line", {x1: 8 + i*SS, y1: top, x2: 8 + i*SS, y2: top + 4*FS, class: "s-line", "stroke-width": 0.8}, g);
+  for (let f = 0; f <= 4; f++) mk("line", {x1: 8, y1: top + f*FS, x2: 8 + 5*SS, y2: top + f*FS, class: "s-line", "stroke-width": 0.8}, g);
+  if (base > 1) mk("text", {x: 2, y: top + FS/2 + 3, "text-anchor": "end", "font-size": 8, class: "s-muted"}, g, String(base));
+  const from = frets.findIndex(f => f === barre);
+  const by = top + (barre - base + 0.5) * FS;
+  mk("rect", {x: 8 + from*SS - 5, y: by - 5, width: (5 - from)*SS + 10, height: 10, rx: 5, class: "s-dot"}, g);
+  frets.forEach((f, i) => {
+    if (f > 0 && f !== barre) mk("circle", {cx: 8 + i*SS, cy: top + (f - base + 0.5) * FS, r: 4.5, class: "s-dot"}, g);
+  });
+}
+miniChord("mini-d1", [-1,4,6,6,5,4], 4);
+miniChord("mini-d2", [5,7,7,6,5,5], 5);
+</script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Аккорды с аппликатурами</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #F3F5F8;
+  --paper: #FFFFFF;
+  --ink: #1D2433;
+  --muted: #5E6675;
+  --line: #C3C9D3;
+  --accent: #B07A1E;
+  --chord: #9A5F0C;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #14171D; --paper: #1C2029; --ink: #E8EAEE; --muted: #A4AAB6;
+    --line: #3C4352; --accent: #D9A441; --chord: #E2B25A;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #14171D; --paper: #1C2029; --ink: #E8EAEE; --muted: #A4AAB6;
+  --line: #3C4352; --accent: #D9A441; --chord: #E2B25A;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; line-height: 1.5; }
+main { max-width: 980px; margin: 0 auto; padding: 28px 20px 48px; }
+h1 { font-size: 1.6rem; font-weight: 600; margin: 0 0 6px; }
+.lead { color: var(--muted); margin: 0 0 14px; max-width: 70ch; }
+textarea {
+  width: 100%; min-height: 220px; padding: 12px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--paper); color: var(--ink); font: 14px/1.45 Consolas, "Courier New", monospace; resize: vertical;
+}
+.bar { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 22px; }
+button {
+  font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--paper); color: var(--ink); cursor: pointer;
+}
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+#sheet { background: var(--paper); border-radius: 10px; padding: 20px 22px; overflow-x: auto; }
+#sheet:empty { display: none; }
+.title-in { font-size: 1.3rem; font-weight: 600; margin: 0 0 10px; }
+.section { font-weight: 600; color: var(--muted); margin: 18px 0 6px; }
+.block { margin: 0 0 14px; break-inside: avoid; page-break-inside: avoid; }
+pre { margin: 0; font: 15px/1.35 Consolas, "Courier New", monospace; white-space: pre; }
+pre.chords { color: var(--chord); font-weight: 700; }
+.row { position: relative; height: 92px; margin-top: 4px; }
+.row svg { position: absolute; top: 0; width: 64px; height: 90px; }
+.str { stroke: var(--muted); }
+.dot { fill: var(--accent); }
+.t-ink { fill: var(--ink); }
+.t-muted { fill: var(--muted); }
+.open { fill: none; stroke: var(--muted); }
+.hidden { display: none; }
+@page { size: A4; margin: 12mm; }
+@media print {
+  :root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
+    color-scheme: light;
+    --bg: #FFFFFF; --paper: #FFFFFF; --ink: #000000; --muted: #444444;
+    --line: #999999; --accent: #B07A1E; --chord: #8A4F00;
+    padding: 0;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff; color: #000; }
+  main { max-width: none; padding: 0; }
+  .editor, .bar, .lead, h1 { display: none !important; }
+  #sheet { padding: 0; border-radius: 0; overflow: visible; background: #fff; }
+  .section { color: #000; }
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>Аккорды с аппликатурами</h1>
+  <p class="lead">Вставьте текст песни в формате «строка аккордов над строкой текста», как на сайтах с подборами. Под каждой строкой появятся схемы аккордов. Строки вида [Припев]: становятся заголовками разделов.</p>
+  <div class="editor">
+    <textarea id="src" spellcheck="false" placeholder="[Куплет]:
+C#m        A          F#m        G#
+первая строка текста
+C#m        A          F#m             B
+вторая строка текста
+
+[Проигрыш]:
+A   F#m   B   G#"></textarea>
+  </div>
+  <div class="bar">
+    <button class="primary" id="render">Показать</button>
+    <button id="toggle">Скрыть редактор</button>
+    <button id="print">Печать</button>
+  </div>
+  <div id="sheet"></div>
+</main>
+<script>
+// Chord shapes: frets from 6th to 1st string (-1 = muted), barre fret (0 = none)
+const SHAPES = {
+  // shapes chosen in the user's chord chart
+  "C#m": [[-1,4,6,6,5,4], 4],
+  "A":   [[5,7,7,6,5,5], 5],
+  "F#m": [[2,4,4,2,2,2], 2],
+  "G#":  [[4,6,6,5,4,4], 4],
+  "B":   [[7,9,9,8,7,7], 7],
+  "E":   [[0,2,2,1,0,0], 0],
+  "G#7": [[4,6,4,5,4,4], 4],
+  "Em":  [[0,2,2,0,0,0], 0],
+  "C":   [[-1,3,2,0,1,0], 0],
+  "Am":  [[-1,0,2,2,1,0], 0],
+  "D":   [[-1,-1,0,2,3,2], 0],
+  "G":   [[3,5,5,4,3,3], 3],
+  "B7":  [[-1,2,4,2,4,2], 2],
+  // common fallbacks
+  "Dm":  [[-1,-1,0,2,3,1], 0],
+  "F":   [[1,3,3,2,1,1], 1],
+  "Bm":  [[-1,2,4,4,3,2], 2],
+  "C#":  [[-1,4,6,6,6,4], 4],
+  "D#":  [[-1,6,8,8,8,6], 6],
+  "F#":  [[2,4,4,3,2,2], 2],
+  "A#":  [[-1,1,3,3,3,1], 1],
+  "G#m": [[4,6,6,4,4,4], 4],
+  "D#m": [[-1,6,8,8,7,6], 6],
+  "A#m": [[-1,1,3,3,2,1], 1],
+  "Fm":  [[1,3,3,1,1,1], 1],
+  "Cm":  [[-1,3,5,5,4,3], 3],
+  "Gm":  [[3,5,5,3,3,3], 3],
+  "A7":  [[-1,0,2,0,2,0], 0],
+  "D7":  [[-1,-1,0,2,1,2], 0],
+  "E7":  [[0,2,0,1,0,0], 0],
+  "G7":  [[3,2,0,0,0,1], 0],
+  "C7":  [[-1,3,2,3,1,0], 0],
+  "Am7": [[-1,0,2,0,1,0], 0],
+  "Em7": [[0,2,2,0,3,0], 0],
+  "Dm7": [[-1,-1,0,2,1,1], 0]
+};
+const FLAT_TO_SHARP = {"Db":"C#","Eb":"D#","Gb":"F#","Ab":"G#","Bb":"A#"};
+const CHORD_RE = /^[A-H](#|b|♯|♭)?(m|maj7|m7|7|sus2|sus4|dim|aug|6|9|add9|maj)?(\/[A-H](#|b|♯|♭)?)?$/;
+const EXTRA_RE = /^(\|+|-+|\(?x\d+\)?|\(?х\d+\)?)$/i;
+
+function normalize(name) {
+  let n = name.replace("♯", "#").replace("♭", "b").split("/")[0];
+  if (n[0] === "H") n = "B" + n.slice(1);
+  const root = n.slice(0, 2);
+  if (FLAT_TO_SHARP[root]) n = FLAT_TO_SHARP[root] + n.slice(2);
+  return n;
+}
+function isChordLine(line) {
+  const t = line.trim().split(/\s+/).filter(Boolean);
+  if (!t.length) return false;
+  return t.every(x => CHORD_RE.test(x) || EXTRA_RE.test(x)) && t.some(x => CHORD_RE.test(x));
+}
+function isHeading(line) { return /^\s*\[[^\]]+\]\s*:?\s*$/.test(line); }
+
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  parent.appendChild(e);
+  return e;
+}
+function diagram(name) {
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", "0 0 64 90");
+  const shape = SHAPES[normalize(name)];
+  mk("text", {x: 34, y: 87, "text-anchor": "middle", "font-size": 10, "font-weight": 700, class: "t-ink"}, svg, name);
+  if (!shape) {
+    mk("text", {x: 34, y: 45, "text-anchor": "middle", "font-size": 9, class: "t-muted"}, svg, "нет схемы");
+    return svg;
+  }
+  const [frets, barre] = shape;
+  const SX = 12, SS = 9, TOP = 20, FS = 13, NF = 4;
+  const maxF = Math.max(...frets);
+  const base = maxF > 4 ? (barre || Math.min(...frets.filter(f => f > 0))) : 1;
+  for (let i = 0; i < 6; i++) mk("line", {x1: SX + i*SS, y1: TOP, x2: SX + i*SS, y2: TOP + NF*FS, class: "str", "stroke-width": 0.8}, svg);
+  for (let f = 0; f <= NF; f++) mk("line", {x1: SX, y1: TOP + f*FS, x2: SX + 5*SS, y2: TOP + f*FS, class: "str", "stroke-width": (f === 0 && base === 1) ? 3 : 0.8}, svg);
+  if (base > 1) mk("text", {x: SX - 4, y: TOP + FS/2 + 3, "text-anchor": "end", "font-size": 8, class: "t-muted"}, svg, String(base));
+  if (barre) {
+    const from = frets.findIndex(f => f === barre);
+    const y = TOP + (barre - base + 0.5) * FS;
+    mk("rect", {x: SX + from*SS - 4, y: y - 4, width: (5 - from)*SS + 8, height: 8, rx: 4, class: "dot"}, svg);
+  }
+  frets.forEach((f, i) => {
+    const x = SX + i*SS;
+    if (f < 0) { mk("text", {x, y: TOP - 4, "text-anchor": "middle", "font-size": 8, class: "t-muted"}, svg, "×"); return; }
+    if (f === 0) { mk("circle", {cx: x, cy: TOP - 7, r: 2.6, class: "open", "stroke-width": 0.9}, svg); return; }
+    if (barre && f === barre) return;
+    mk("circle", {cx: x, cy: TOP + (f - base + 0.5) * FS, r: 3.8, class: "dot"}, svg);
+  });
+  return svg;
+}
+
+function charWidth() {
+  const probe = document.createElement("pre");
+  probe.style.cssText = "position:absolute;visibility:hidden";
+  probe.textContent = "0".repeat(100);
+  document.body.appendChild(probe);
+  const w = probe.getBoundingClientRect().width / 100;
+  probe.remove();
+  return w || 9;
+}
+function chordRow(chordLine, chw) {
+  const row = document.createElement("div");
+  row.className = "row";
+  const re = /\S+/g;
+  let m, prevRight = -Infinity, right = 0;
+  while ((m = re.exec(chordLine))) {
+    if (!CHORD_RE.test(m[0])) continue;
+    const left = Math.max(m.index * chw - 6, prevRight + 4, 0);
+    const svg = diagram(m[0]);
+    svg.style.left = left + "px";
+    row.appendChild(svg);
+    prevRight = left + 64;
+    right = prevRight;
+  }
+  row.style.minWidth = right + "px";
+  return row;
+}
+function pre(cls, text) {
+  const p = document.createElement("pre");
+  p.className = cls;
+  p.textContent = text;
+  return p;
+}
+
+function render() {
+  const sheet = document.getElementById("sheet");
+  sheet.innerHTML = "";
+  const chw = charWidth();
+  const lines = document.getElementById("src").value.replace(/\t/g, "    ").split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) continue;
+    if (isHeading(line)) {
+      const h = document.createElement("div");
+      h.className = "section";
+      h.textContent = line.trim().replace(/^\[|\]\s*:?$/g, "");
+      sheet.appendChild(h);
+      continue;
+    }
+    const block = document.createElement("div");
+    block.className = "block";
+    if (isChordLine(line)) {
+      block.appendChild(pre("chords", line));
+      const next = lines[i + 1];
+      if (next !== undefined && next.trim() && !isChordLine(next) && !isHeading(next)) {
+        block.appendChild(pre("lyric", next));
+        i++;
+      }
+      block.appendChild(chordRow(line, chw));
+    } else {
+      block.appendChild(pre("lyric", line));
+    }
+    sheet.appendChild(block);
+  }
+}
+
+document.getElementById("render").addEventListener("click", render);
+document.getElementById("print").addEventListener("click", () => { render(); window.print(); });
+document.getElementById("toggle").addEventListener("click", e => {
+  const ed = document.querySelector(".editor");
+  ed.classList.toggle("hidden");
+  e.target.textContent = ed.classList.contains("hidden") ? "Показать редактор" : "Скрыть редактор";
+});
+</script>
+</body>
+</html>

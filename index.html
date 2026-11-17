@@ -3,24 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Квинтовый круг с аккордами</title>
+<title>Гитара: квинтовый круг и аккорды</title>
+<meta name="description" content="Интерактивный квинтовый круг с аппликатурами и страница для печати песен со схемами аккордов.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎸</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   color-scheme: light;
   --bg: #F3F5F8;
+  --card: #FFFFFF;
   --ink: #1D2433;
   --muted: #5E6675;
   --faint: #8A91A0;
-  --line: #B9C0CC;
-  --major: #FFFFFF;
+  --line: #D6DBE3;
   --minor: #E4E8EF;
   --accent: #B07A1E;
-  --hl: rgba(176, 122, 30, 0.28);
-  --hl-strong: rgba(176, 122, 30, 0.62);
-  --dot-text: #FFFFFF;
+  --accent-soft: rgba(176, 122, 30, 0.12);
+  --on-accent: #FFFFFF;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -28,127 +29,131 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #14171D;
-    --ink: #E8EAEE;
-    --muted: #A4AAB6;
-    --faint: #7A8190;
-    --line: #3C4352;
-    --major: #1C2029;
-    --minor: #252B36;
-    --accent: #D9A441;
-    --hl: rgba(217, 164, 65, 0.25);
-    --hl-strong: rgba(217, 164, 65, 0.55);
-    --dot-text: #14171D;
+    --bg: #14171D; --card: #1C2029; --ink: #E8EAEE; --muted: #A4AAB6; --faint: #7A8190;
+    --line: #2E3440; --minor: #252B36; --accent: #D9A441; --accent-soft: rgba(217, 164, 65, 0.14); --on-accent: #14171D;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #14171D;
-  --ink: #E8EAEE;
-  --muted: #A4AAB6;
-  --faint: #7A8190;
-  --line: #3C4352;
-  --major: #1C2029;
-  --minor: #252B36;
-  --accent: #D9A441;
-  --hl: rgba(217, 164, 65, 0.25);
-  --hl-strong: rgba(217, 164, 65, 0.55);
-  --dot-text: #14171D;
+  --bg: #14171D; --card: #1C2029; --ink: #E8EAEE; --muted: #A4AAB6; --faint: #7A8190;
+  --line: #2E3440; --minor: #252B36; --accent: #D9A441; --accent-soft: rgba(217, 164, 65, 0.14); --on-accent: #14171D;
 }
-html { scroll-padding-top: env(safe-area-inset-top, 0px); }
 * { box-sizing: border-box; }
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: "Golos Text", "Segoe UI", system-ui, -apple-system, sans-serif;
-  line-height: 1.55;
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "Golos Text", "Segoe UI", system-ui, -apple-system, sans-serif; line-height: 1.6;
 }
-main { max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; }
-h1 { font-size: 2rem; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
-.lead { color: var(--muted); margin: 0 0 20px; max-width: 60ch; }
-svg { display: block; width: 100%; height: auto; max-width: 100%; }
-#cof { max-width: 600px; margin: 0 auto; }
-.sector { cursor: pointer; outline: none; }
-.sector:focus-visible .maj { stroke: var(--accent); stroke-width: 2; }
-.maj { fill: var(--major); stroke: var(--line); stroke-width: 0.8; transition: fill .15s; }
-.min { fill: var(--minor); stroke: var(--line); stroke-width: 0.8; transition: fill .15s; }
-.maj.on, .min.on { fill: var(--hl); }
-.maj.tonic { fill: var(--hl-strong); }
-.t-ink { fill: var(--ink); }
-.t-muted { fill: var(--muted); }
-.t-faint { fill: var(--faint); }
-.str { stroke: var(--muted); }
-.dot { fill: var(--accent); }
-.t-dot { fill: var(--dot-text); }
-.open { fill: none; stroke: var(--muted); }
-#info { text-align: center; font-size: 1.05rem; margin: 10px 0 18px; }
-#info strong { font-weight: 600; }
-.shapes-wrap { overflow-x: auto; }
-#shapes { min-width: 560px; }
-.notes { color: var(--muted); font-size: 0.95rem; margin-top: 24px; max-width: 64ch; }
-.notes p { margin: 0 0 8px; }
+main { max-width: 1040px; margin: 0 auto; padding: 56px 24px 64px; }
+header { max-width: 680px; margin-bottom: 40px; }
+.kicker { color: var(--accent); font-weight: 600; font-size: 0.9rem; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 10px; }
+h1 { font-size: clamp(2rem, 4.5vw, 2.9rem); line-height: 1.15; font-weight: 700; margin: 0 0 14px; letter-spacing: -0.015em; }
+.lead { color: var(--muted); font-size: 1.1rem; margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px;
+  display: flex; flex-direction: column; transition: border-color .2s, transform .2s;
+}
+.card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.art { height: 170px; display: flex; align-items: center; justify-content: center; background: var(--accent-soft); border-radius: 12px; margin-bottom: 22px; }
+.art svg { height: 140px; width: auto; max-width: 100%; }
+h2 { font-size: 1.4rem; font-weight: 600; margin: 0 0 8px; }
+.desc { color: var(--muted); margin: 0 0 18px; }
+h3 { font-size: 0.85rem; font-weight: 600; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 8px; }
+ol { margin: 0 0 24px; padding-left: 1.2em; }
+ol li { margin-bottom: 6px; }
+ol li::marker { color: var(--accent); font-weight: 600; }
+.btn {
+  margin-top: auto; align-self: flex-start; display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent); color: var(--on-accent); text-decoration: none; font-weight: 600;
+  padding: 11px 20px; border-radius: 10px; transition: filter .15s;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+.tips { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px 32px; }
+.tip strong { display: block; font-weight: 600; margin-bottom: 4px; }
+.tip p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+footer { margin-top: 48px; color: var(--faint); font-size: 0.9rem; }
+.s-line { stroke: var(--muted); }
+.s-maj { fill: var(--card); stroke: var(--line); }
+.s-min { fill: var(--minor); stroke: var(--line); }
+.s-on { fill: var(--accent); fill-opacity: .35; stroke: var(--line); }
+.s-tonic { fill: var(--accent); fill-opacity: .7; stroke: var(--line); }
+.s-dot { fill: var(--accent); }
+.s-text { fill: var(--ink); font-family: inherit; }
+.s-muted { fill: var(--muted); font-family: inherit; }
 </style>
 </head>
 <body>
 <main>
-  <h1>Квинтовый круг</h1>
-  <p class="lead">Выберите тональность на круге, и под ним появятся шесть её аккордов с самой ходовой гитарной аппликатурой.</p>
+  <header>
+    <p class="kicker">Гитара</p>
+    <h1>Квинтовый круг и аккорды для песен</h1>
+    <p class="lead">Два небольших инструмента для тех, кто учится играть: разобраться, какие аккорды сочетаются между собой, и распечатать песню со схемами прямо под словами.</p>
+  </header>
 
-  <svg id="cof" viewBox="0 0 460 460" role="img" aria-label="Квинтовый круг: мажорные трезвучия снаружи, параллельные минорные внутри"></svg>
-  <div id="info" aria-live="polite"></div>
-  <div class="shapes-wrap">
-    <svg id="shapes" viewBox="0 0 680 215" role="img" aria-label="Аппликатуры аккордов выбранной тональности"></svg>
-  </div>
+  <section class="grid">
+    <article class="card">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 160 160">
+          <g id="mini-cof"></g>
+        </svg>
+      </div>
+      <h2>Квинтовый круг</h2>
+      <p class="desc">Интерактивная карта тональностей: мажорные трезвучия по кругу, параллельные минорные внутри, знаки при ключе в центре.</p>
+      <h3>Как пользоваться</h3>
+      <ol>
+        <li>Нажмите на любой сектор круга, чтобы выбрать тональность.</li>
+        <li>Подсветятся шесть аккордов этой тональности: выбранный мажор, его соседи и три минора под ними.</li>
+        <li>Под кругом появятся схемы этих аккордов в самой ходовой аппликатуре.</li>
+      </ol>
+      <a class="btn" href="kvintovyj-krug.html">Открыть круг <span aria-hidden="true">→</span></a>
+    </article>
 
-  <div class="notes">
-    <p>По часовой стрелке каждый шаг — квинта вверх и один диез, против часовой — кварта вверх и один бемоль.</p>
-    <p>Аккорды тональности: выбранный мажор (I), его соседи слева (IV) и справа (V) и три минора под ними (vi, ii, iii).</p>
-    <p>На схемах: ○ открытая струна, × не играть, цифра в кружке — палец, полоса — баррэ, число слева — лад.</p>
-  </div>
+    <article class="card">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 220 140">
+          <text x="18" y="22" class="s-text" font-size="13" font-weight="700" style="fill: var(--accent)">C#m</text>
+          <text x="118" y="22" class="s-text" font-size="13" font-weight="700" style="fill: var(--accent)">A</text>
+          <rect x="18" y="32" width="170" height="6" rx="3" class="s-muted" opacity=".35"></rect>
+          <rect x="18" y="44" width="120" height="6" rx="3" class="s-muted" opacity=".2"></rect>
+          <g id="mini-d1" transform="translate(14,58)"></g>
+          <g id="mini-d2" transform="translate(114,58)"></g>
+        </svg>
+      </div>
+      <h2>Песня со схемами аккордов</h2>
+      <p class="desc">Вставляете подбор песни в привычном виде, и под каждой строкой текста появляются схемы аккордов. Готовую страницу удобно печатать.</p>
+      <h3>Как пользоваться</h3>
+      <ol>
+        <li>Скопируйте с сайта подбор, где аккорды стоят над текстом, и вставьте в поле.</li>
+        <li>Нажмите «Показать». Строки вида [Припев]: станут заголовками разделов.</li>
+        <li>Нажимайте на схему или стрелки ‹ › под ней, чтобы выбрать другую аппликатуру: она сменится во всей песне.</li>
+        <li>Значком ⤓ слева от строки начните новую страницу, подберите масштаб и нажмите «Печать».</li>
+      </ol>
+      <a class="btn" href="chord-sheet.html">Открыть страницу <span aria-hidden="true">→</span></a>
+    </article>
+  </section>
+
+  <section class="tips">
+    <div class="tip">
+      <strong>Всё запоминается</strong>
+      <p>Текст песни, выбранные аппликатуры и разрывы страниц сохраняются в вашем браузере.</p>
+    </div>
+    <div class="tip">
+      <strong>Печать</strong>
+      <p>Открывайте страницу прямо в браузере, а не в предпросмотре файла. Если правый край обрезается, выберите альбомную ориентацию.</p>
+    </div>
+    <div class="tip">
+      <strong>Буквы и ноты</strong>
+      <p>A — ля, B — си, C — до, D — ре, E — ми, F — фа, G — соль. Маленькая m означает минор.</p>
+    </div>
+  </section>
+
+  <footer>Работает в любом современном браузере, на компьютере и на телефоне.</footer>
 </main>
 <script>
+// Decorative mini illustrations
 const NS = "http://www.w3.org/2000/svg";
-const cof = document.getElementById("cof");
-const shp = document.getElementById("shapes");
-
-const majors = ["C","G","D","A","E","B","F♯/G♭","D♭","A♭","E♭","B♭","F"];
-const majRu  = ["до","соль","ре","ля","ми","си","фа♯/соль♭","ре♭","ля♭","ми♭","си♭","фа"];
-const minors = ["Am","Em","Bm","F♯m","C♯m","G♯m","D♯m/E♭m","B♭m","Fm","Cm","Gm","Dm"];
-const minRu  = ["ля","ми","си","фа♯","до♯","соль♯","ре♯/ми♭","си♭","фа","до","соль","ре"];
-const sigs   = ["0","1♯","2♯","3♯","4♯","5♯","6","5♭","4♭","3♭","2♭","1♭"];
-
-// Shapes: frets from 6th to 1st string (-1 = muted), fingers, barre [fret, fromString] or null
-const majShape = [
-  [[-1,3,2,0,1,0], "-32-1-", null],
-  [[3,2,0,0,0,3], "21---3", null],
-  [[-1,-1,0,2,3,2], "---132", null],
-  [[-1,0,2,2,2,0], "--123-", null],
-  [[0,2,2,1,0,0], "-231--", null],
-  [[-1,2,4,4,4,2], "-12341", [2,1]],
-  [[2,4,4,3,2,2], "134211", [2,0]],
-  [[-1,4,6,6,6,4], "-12341", [4,1]],
-  [[4,6,6,5,4,4], "134211", [4,0]],
-  [[-1,6,8,8,8,6], "-12341", [6,1]],
-  [[-1,1,3,3,3,1], "-12341", [1,1]],
-  [[1,3,3,2,1,1], "134211", [1,0]]
-];
-const minShape = [
-  [[-1,0,2,2,1,0], "--231-", null],
-  [[0,2,2,0,0,0], "-23---", null],
-  [[-1,2,4,4,3,2], "-13421", [2,1]],
-  [[2,4,4,2,2,2], "134111", [2,0]],
-  [[-1,4,6,6,5,4], "-13421", [4,1]],
-  [[4,6,6,4,4,4], "134111", [4,0]],
-  [[-1,6,8,8,7,6], "-13421", [6,1]],
-  [[-1,1,3,3,2,1], "-13421", [1,1]],
-  [[1,3,3,1,1,1], "134111", [1,0]],
-  [[-1,3,5,5,4,3], "-13421", [3,1]],
-  [[3,5,5,3,3,3], "134111", [3,0]],
-  [[-1,-1,0,2,3,1], "---231", null]
-];
-
-function el(tag, attrs, text, parent) {
+function mk(tag, attrs, parent, text) {
   const e = document.createElementNS(NS, tag);
   for (const k in attrs) e.setAttribute(k, attrs[k]);
   if (text !== undefined) e.textContent = text;
@@ -156,87 +161,42 @@ function el(tag, attrs, text, parent) {
   return e;
 }
 
-// Circle geometry
-const CX = 230, CY = 230;
-const R = {outerOut: 222, outerIn: 156, innerIn: 98, maj: 200, majRu: 174, min: 137, minRu: 116, sig: 76};
-function pt(r, deg) { const a = deg * Math.PI / 180; return [CX + r * Math.cos(a), CY + r * Math.sin(a)]; }
-function wedge(r1, r2, a1, a2) {
-  const [x1, y1] = pt(r2, a1), [x2, y2] = pt(r2, a2), [x3, y3] = pt(r1, a2), [x4, y4] = pt(r1, a1);
-  return `M${x1} ${y1} A${r2} ${r2} 0 0 1 ${x2} ${y2} L${x3} ${y3} A${r1} ${r1} 0 0 0 ${x4} ${y4} Z`;
-}
-function label(r, deg, text, size, weight, cls, g) {
-  const [x, y] = pt(r, deg);
-  el("text", {x, y, "text-anchor": "middle", "dominant-baseline": "central", "font-size": size, "font-weight": weight, class: cls}, text, g);
-}
-function first(s) { return s.split("/")[0]; }
-
-const majW = [], minW = [];
-for (let i = 0; i < 12; i++) {
-  const c = -90 + i * 30;
-  const g = el("g", {class: "sector", tabindex: 0, role: "button", "aria-label": `${first(majRu[i])} мажор и ${first(minRu[i])} минор`}, undefined, cof);
-  g.addEventListener("click", () => select(i));
-  g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(i); } });
-  majW.push(el("path", {d: wedge(R.outerIn, R.outerOut, c - 15, c + 15), class: "maj"}, undefined, g));
-  minW.push(el("path", {d: wedge(R.innerIn, R.outerIn, c - 15, c + 15), class: "min"}, undefined, g));
-  label(R.maj, c, majors[i], majors[i].length > 3 ? 12 : 17, 600, "t-ink", g);
-  label(R.majRu, c, majRu[i], 11, 400, "t-muted", g);
-  label(R.min, c, minors[i], minors[i].length > 4 ? 11 : 14, 500, "t-ink", g);
-  label(R.minRu, c, minRu[i], 11, 400, "t-muted", g);
-  label(R.sig, c, sigs[i], 11, 400, "t-faint", cof);
-}
-el("text", {x: CX, y: CY, "text-anchor": "middle", "dominant-baseline": "central", "font-size": 11, class: "t-faint"}, "знаки", cof);
-
-// Chord diagrams
-const SS = 15, FS = 22, NF = 4;
-function drawChord(ox, oy, name, sub, deg, shape) {
-  const [frets, fingers, barre] = shape;
-  const maxF = Math.max(...frets);
-  const base = (maxF > 4 && barre) ? barre[0] : 1;
-  const top = oy + 52;
-  el("text", {x: ox + 37, y: oy + 10, "text-anchor": "middle", "font-size": 16, "font-weight": 600, class: "t-ink"}, name, shp);
-  el("text", {x: ox + 37, y: oy + 27, "text-anchor": "middle", "font-size": 11, class: "t-muted"}, `${deg}, ${sub}`, shp);
-  for (let i = 0; i < 6; i++) el("line", {x1: ox + i*SS, y1: top, x2: ox + i*SS, y2: top + NF*FS, class: "str", "stroke-width": 1}, undefined, shp);
-  for (let f = 0; f <= NF; f++) el("line", {x1: ox, y1: top + f*FS, x2: ox + 5*SS, y2: top + f*FS, class: "str", "stroke-width": (f === 0 && base === 1) ? 4 : 1}, undefined, shp);
-  if (base > 1) el("text", {x: ox - 8, y: top + FS/2 + 4, "text-anchor": "end", "font-size": 11, class: "t-muted"}, String(base), shp);
-  if (barre) {
-    const y = top + (barre[0] - base + 0.5) * FS;
-    el("rect", {x: ox + barre[1]*SS - 7, y: y - 7, width: (5 - barre[1])*SS + 14, height: 14, rx: 7, class: "dot"}, undefined, shp);
-    el("text", {x: ox + barre[1]*SS, y: y + 4, "text-anchor": "middle", "font-size": 11, "font-weight": 600, class: "t-dot"}, "1", shp);
+(function miniCircle() {
+  const g = document.getElementById("mini-cof");
+  const cx = 80, cy = 80;
+  const labels = ["C","G","D","A","E","B","F♯","D♭","A♭","E♭","B♭","F"];
+  const pt = (r, d) => [cx + r * Math.cos(d * Math.PI / 180), cy + r * Math.sin(d * Math.PI / 180)];
+  const wedge = (r1, r2, a1, a2) => {
+    const [x1, y1] = pt(r2, a1), [x2, y2] = pt(r2, a2), [x3, y3] = pt(r1, a2), [x4, y4] = pt(r1, a1);
+    return `M${x1} ${y1} A${r2} ${r2} 0 0 1 ${x2} ${y2} L${x3} ${y3} A${r1} ${r1} 0 0 0 ${x4} ${y4} Z`;
+  };
+  for (let i = 0; i < 12; i++) {
+    const c = -90 + i * 30;
+    const outer = i === 0 ? "s-tonic" : (i === 1 || i === 11) ? "s-on" : "s-maj";
+    const inner = (i === 0 || i === 1 || i === 11) ? "s-on" : "s-min";
+    mk("path", {d: wedge(52, 76, c - 15, c + 15), class: outer, "stroke-width": 0.8}, g);
+    mk("path", {d: wedge(32, 52, c - 15, c + 15), class: inner, "stroke-width": 0.8}, g);
+    const [x, y] = pt(64, c);
+    mk("text", {x, y, "text-anchor": "middle", "dominant-baseline": "central", "font-size": 9, "font-weight": 600, class: "s-text"}, g, labels[i]);
   }
-  for (let i = 0; i < 6; i++) {
-    const f = frets[i], x = ox + i*SS;
-    if (f < 0) { el("text", {x, y: top - 7, "text-anchor": "middle", "font-size": 12, class: "t-muted"}, "×", shp); continue; }
-    if (f === 0) { el("circle", {cx: x, cy: top - 11, r: 4, class: "open", "stroke-width": 1.2}, undefined, shp); continue; }
-    if (barre && f === barre[0] && i >= barre[1]) continue;
-    const y = top + (f - base + 0.5) * FS;
-    el("circle", {cx: x, cy: y, r: 6.5, class: "dot"}, undefined, shp);
-    if (fingers[i] !== "-") el("text", {x, y: y + 4, "text-anchor": "middle", "font-size": 11, "font-weight": 600, class: "t-dot"}, fingers[i], shp);
-  }
-  el("text", {x: ox + 37, y: top + NF*FS + 20, "text-anchor": "middle", "font-size": 11, class: "t-faint"}, frets.map(v => v < 0 ? "x" : v).join(" "), shp);
-}
+})();
 
-function select(k) {
-  for (let i = 0; i < 12; i++) { majW[i].setAttribute("class", "maj"); minW[i].setAttribute("class", "min"); }
-  const L = (k + 11) % 12, Rt = (k + 1) % 12;
-  [L, k, Rt].forEach(i => { majW[i].setAttribute("class", "maj on"); minW[i].setAttribute("class", "min on"); });
-  majW[k].setAttribute("class", "maj tonic");
-  const info = document.getElementById("info");
-  info.innerHTML = "";
-  const s = document.createElement("strong");
-  s.textContent = `${first(majRu[k])} мажор (${first(majors[k])})`;
-  info.append(s, ` и параллельный ${first(minRu[k])} минор (${first(minors[k])})`);
-  while (shp.firstChild) shp.removeChild(shp.firstChild);
-  const list = [
-    [majors[k], first(majRu[k]) + " маж", "I", majShape[k]],
-    [majors[L], first(majRu[L]) + " маж", "IV", majShape[L]],
-    [majors[Rt], first(majRu[Rt]) + " маж", "V", majShape[Rt]],
-    [minors[k], first(minRu[k]) + " мин", "vi", minShape[k]],
-    [minors[L], first(minRu[L]) + " мин", "ii", minShape[L]],
-    [minors[Rt], first(minRu[Rt]) + " мин", "iii", minShape[Rt]]
-  ];
-  list.forEach((c, j) => drawChord(36 + j * 110, 8, first(c[0]), c[1], c[2], c[3]));
+function miniChord(id, frets, barre) {
+  const g = document.getElementById(id);
+  const SS = 12, FS = 15, top = 6;
+  const base = Math.max(...frets) > 4 ? barre : 1;
+  for (let i = 0; i < 6; i++) mk("line", {x1: 8 + i*SS, y1: top, x2: 8 + i*SS, y2: top + 4*FS, class: "s-line", "stroke-width": 0.8}, g);
+  for (let f = 0; f <= 4; f++) mk("line", {x1: 8, y1: top + f*FS, x2: 8 + 5*SS, y2: top + f*FS, class: "s-line", "stroke-width": 0.8}, g);
+  if (base > 1) mk("text", {x: 2, y: top + FS/2 + 3, "text-anchor": "end", "font-size": 8, class: "s-muted"}, g, String(base));
+  const from = frets.findIndex(f => f === barre);
+  const by = top + (barre - base + 0.5) * FS;
+  mk("rect", {x: 8 + from*SS - 5, y: by - 5, width: (5 - from)*SS + 10, height: 10, rx: 5, class: "s-dot"}, g);
+  frets.forEach((f, i) => {
+    if (f > 0 && f !== barre) mk("circle", {cx: 8 + i*SS, cy: top + (f - base + 0.5) * FS, r: 4.5, class: "s-dot"}, g);
+  });
 }
-select(0);
+miniChord("mini-d1", [-1,4,6,6,5,4], 4);
+miniChord("mini-d2", [5,7,7,6,5,5], 5);
 </script>
 </body>
 </html>
